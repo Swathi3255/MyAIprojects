@@ -51,7 +51,8 @@ const App = () => {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'text/plain'
         },
         body: JSON.stringify({
           developer_message: developerMessage,
@@ -61,9 +62,10 @@ const App = () => {
         })
       });
 
-      if (!response.ok || !response.body) {
+      if (!response.ok) {
         const errorText = await response.text().catch(() => '');
-        throw new Error(errorText || 'Request failed');
+        const details = errorText || `${response.status} ${response.statusText}`;
+        throw new Error(details);
       }
 
       // Create assistant message
@@ -76,18 +78,25 @@ const App = () => {
 
       setMessages(prev => [...prev, assistantMessage]);
 
-      // Handle streaming response
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
+      // Handle streaming response; if body isn't a stream (some environments), fallback to text
+      if (response.body && response.body.getReader) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          setMessages(prev => prev.map(msg =>
+            msg.id === assistantMessage.id
+              ? { ...msg, content: msg.content + chunk }
+              : msg
+          ));
+        }
+      } else {
+        const text = await response.text();
         setMessages(prev => prev.map(msg =>
           msg.id === assistantMessage.id
-            ? { ...msg, content: msg.content + chunk }
+            ? { ...msg, content: msg.content + (text || '') }
             : msg
         ));
       }
@@ -95,7 +104,9 @@ const App = () => {
       setSuccess('Message sent successfully!');
     } catch (err) {
       console.error('Error sending message:', err);
-      const message = err?.message || 'Failed to send message. Please check your API key and try again.';
+      const message = (typeof err?.message === 'string' && err.message.trim().length > 0)
+        ? err.message
+        : 'Failed to send message. Please check your API key and try again.';
       setError(message);
 
       // Remove the user message if there was an error
