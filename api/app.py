@@ -14,13 +14,21 @@ from typing import Optional
 app = FastAPI(title="OpenAI Chat API")
 
 # Configure CORS (Cross-Origin Resource Sharing) middleware
-# This allows the API to be accessed from different domains/origins
+# Derive allowed origins from environment. Supports comma-separated list.
+# Defaults to local Vite dev server.
+frontend_origins_env = os.getenv("FRONTEND_ORIGINS", "http://localhost:3000")
+allowed_origins = [origin.strip() for origin in frontend_origins_env.split(",") if origin.strip()]
+
+# Optional origin regex (e.g., to allow Vercel preview deployments)
+allowed_origin_regex = os.getenv("FRONTEND_ORIGIN_REGEX", None)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows requests from any origin
-    allow_credentials=True,  # Allows cookies to be included in requests
-    allow_methods=["*"],  # Allows all HTTP methods (GET, POST, etc.)
-    allow_headers=["*"],  # Allows all headers in requests
+    allow_origins=allowed_origins,
+    allow_origin_regex=allowed_origin_regex,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Define the data model for chat requests using Pydantic
