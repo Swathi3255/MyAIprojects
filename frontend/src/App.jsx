@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Settings, AlertCircle, CheckCircle } from 'lucide-react';
-import axios from 'axios';
 
 const App = () => {
   const [messages, setMessages] = useState([]);
@@ -49,14 +48,25 @@ const App = () => {
     setUserMessage('');
 
     try {
-      const response = await axios.post('/api/chat', {
-        developer_message: developerMessage,
-        user_message: userMessage,
-        model: selectedModel,
-        api_key: apiKey
-      }, {
-        responseType: 'stream'
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'text/plain'
+        },
+        body: JSON.stringify({
+          developer_message: developerMessage,
+          user_message: userMessage,
+          model: selectedModel,
+          api_key: apiKey
+        })
       });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => '');
+        const details = errorText || `${response.status} ${response.statusText}`;
+        throw new Error(details);
+      }
 
       // Create assistant message
       const assistantMessage = {
@@ -68,18 +78,25 @@ const App = () => {
 
       setMessages(prev => [...prev, assistantMessage]);
 
-      // Handle streaming response
-      const reader = response.data.getReader();
-      const decoder = new TextDecoder();
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value);
-        setMessages(prev => prev.map(msg => 
-          msg.id === assistantMessage.id 
-            ? { ...msg, content: msg.content + chunk }
+      // Handle streaming response; if body isn't a stream (some environments), fallback to text
+      if (response.body && response.body.getReader) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          setMessages(prev => prev.map(msg =>
+            msg.id === assistantMessage.id
+              ? { ...msg, content: msg.content + chunk }
+              : msg
+          ));
+        }
+      } else {
+        const text = await response.text();
+        setMessages(prev => prev.map(msg =>
+          msg.id === assistantMessage.id
+            ? { ...msg, content: msg.content + (text || '') }
             : msg
         ));
       }
@@ -87,8 +104,11 @@ const App = () => {
       setSuccess('Message sent successfully!');
     } catch (err) {
       console.error('Error sending message:', err);
-      setError(err.response?.data?.detail || 'Failed to send message. Please check your API key and try again.');
-      
+      const message = (typeof err?.message === 'string' && err.message.trim().length > 0)
+        ? err.message
+        : 'Failed to send message. Please check your API key and try again.';
+      setError(message);
+
       // Remove the user message if there was an error
       setMessages(prev => prev.filter(msg => msg.id !== newUserMessage.id));
     } finally {
