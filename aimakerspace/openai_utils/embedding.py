@@ -19,8 +19,8 @@ class EmbeddingModel:
             )
 
         self.embeddings_model_name = embeddings_model_name
-        self.async_client = AsyncOpenAI()
-        self.client = OpenAI()
+        self.async_client = AsyncOpenAI(api_key=self.openai_api_key)
+        self.client = OpenAI(api_key=self.openai_api_key)
 
     async def async_get_embeddings(self, list_of_text: Iterable[str]) -> List[List[float]]:
         """Return embeddings for ``list_of_text`` using the async client."""

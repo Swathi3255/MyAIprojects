@@ -18,8 +18,8 @@ class ChatOpenAI:
         if self.openai_api_key is None:
             raise ValueError("OPENAI_API_KEY is not set")
 
-        self._client = OpenAI()
-        self._async_client = AsyncOpenAI()
+        self._client = OpenAI(api_key=self.openai_api_key)
+        self._async_client = AsyncOpenAI(api_key=self.openai_api_key)
 
     def run(
         self,

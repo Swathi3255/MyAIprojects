@@ -124,18 +124,35 @@ async def upload_pdf(file: UploadFile = File(...), api_key: str = Form("")):
             
             # Create vector database (API key should be set in environment now)
             try:
+                print("DEBUG: Creating EmbeddingModel...")
                 embedding_model = EmbeddingModel()
+                print("DEBUG: EmbeddingModel created successfully")
+                
+                print("DEBUG: Creating VectorDatabase...")
                 pdf_vector_db = VectorDatabase(embedding_model)
+                print("DEBUG: VectorDatabase created successfully")
             except Exception as e:
+                print(f"DEBUG: Error creating embedding model or vector database: {str(e)}")
+                print(f"DEBUG: Error type: {type(e)}")
+                import traceback
+                print(f"DEBUG: Full traceback: {traceback.format_exc()}")
                 raise HTTPException(status_code=500, detail=f"Failed to initialize embedding model: {str(e)}")
             
             # Build vector database from chunks
             try:
-                print("Starting embedding creation...")
+                print(f"DEBUG: Starting embedding creation for {len(pdf_text_chunks)} chunks...")
+                print(f"DEBUG: First chunk preview: {pdf_text_chunks[0][:100]}...")
+                
+                print("DEBUG: Calling abuild_from_list...")
                 await pdf_vector_db.abuild_from_list(pdf_text_chunks)
-                print("Embedding creation completed successfully!")
+                print("DEBUG: Embedding creation completed successfully!")
+                
+                print(f"DEBUG: Vector database now has {len(pdf_vector_db.vectors)} vectors")
             except Exception as e:
-                print(f"Error during embedding creation: {str(e)}")
+                print(f"DEBUG: Error during embedding creation: {str(e)}")
+                print(f"DEBUG: Error type: {type(e)}")
+                import traceback
+                print(f"DEBUG: Full traceback: {traceback.format_exc()}")
                 raise HTTPException(status_code=500, detail=f"Failed to create embeddings: {str(e)}")
             
             current_pdf_filename = file.filename
