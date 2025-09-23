@@ -207,15 +207,33 @@ Instructions:
 - Do not make up information or use knowledge outside of the provided context"""
         
         # Initialize chat model
-        chat_model = ChatOpenAI(model_name=request.model)
+        try:
+            print("DEBUG: Creating ChatOpenAI model...")
+            chat_model = ChatOpenAI(model_name=request.model)
+            print("DEBUG: ChatOpenAI model created successfully")
+        except Exception as e:
+            print(f"DEBUG: Error creating ChatOpenAI model: {str(e)}")
+            print(f"DEBUG: Error type: {type(e)}")
+            import traceback
+            print(f"DEBUG: Full traceback: {traceback.format_exc()}")
+            raise HTTPException(status_code=500, detail=f"Failed to initialize chat model: {str(e)}")
         
         # Create async generator for streaming response
         async def generate():
-            async for chunk in chat_model.astream([
-                {"role": "system", "content": system_message},
-                {"role": "user", "content": request.user_message}
-            ]):
-                yield chunk
+            try:
+                print("DEBUG: Starting chat streaming...")
+                async for chunk in chat_model.astream([
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": request.user_message}
+                ]):
+                    yield chunk
+                print("DEBUG: Chat streaming completed successfully")
+            except Exception as e:
+                print(f"DEBUG: Error during chat streaming: {str(e)}")
+                print(f"DEBUG: Error type: {type(e)}")
+                import traceback
+                print(f"DEBUG: Full traceback: {traceback.format_exc()}")
+                yield f"Error: {str(e)}"
         
         return StreamingResponse(generate(), media_type="text/plain")
         
