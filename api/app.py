@@ -161,6 +161,7 @@ async def upload_pdf(file: UploadFile = File(...), api_key: str = Form("")):
                 "message": f"PDF '{file.filename}' uploaded and indexed successfully",
                 "filename": file.filename,
                 "chunks_count": len(pdf_text_chunks),
+                "has_pdf": True,
                 "status": "success"
             }
             
