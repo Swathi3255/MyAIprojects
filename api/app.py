@@ -93,9 +93,11 @@ async def upload_pdf(file: UploadFile = File(...), api_key: str = ""):
         if not file.filename.lower().endswith('.pdf'):
             raise HTTPException(status_code=400, detail="Only PDF files are allowed")
         
-        # Set API key for OpenAI
+        # Set API key for OpenAI BEFORE creating any aimakerspace objects
         if api_key:
             os.environ["OPENAI_API_KEY"] = api_key
+        else:
+            raise HTTPException(status_code=400, detail="OpenAI API key is required")
         
         # Save uploaded file temporarily
         with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
@@ -111,7 +113,7 @@ async def upload_pdf(file: UploadFile = File(...), api_key: str = ""):
             text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
             pdf_text_chunks = text_splitter.split_texts(pdf_documents)
             
-            # Create vector database
+            # Create vector database (API key should be set in environment now)
             embedding_model = EmbeddingModel()
             pdf_vector_db = VectorDatabase(embedding_model)
             
@@ -144,8 +146,11 @@ async def pdf_chat(request: PDFChatRequest):
         if pdf_vector_db is None:
             raise HTTPException(status_code=400, detail="No PDF uploaded. Please upload a PDF first.")
         
-        # Set API key for OpenAI
-        os.environ["OPENAI_API_KEY"] = request.api_key
+        # Set API key for OpenAI BEFORE creating any aimakerspace objects
+        if request.api_key:
+            os.environ["OPENAI_API_KEY"] = request.api_key
+        else:
+            raise HTTPException(status_code=400, detail="OpenAI API key is required")
         
         # Search for relevant chunks
         relevant_chunks = pdf_vector_db.search_by_text(request.user_message, k=5, return_as_text=True)
