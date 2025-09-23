@@ -107,16 +107,27 @@ async def upload_pdf(file: UploadFile = File(...), api_key: str = Form("")):
         
         try:
             # Load PDF using aimakerspace
-            pdf_loader = PDFLoader(tmp_path)
-            pdf_documents = pdf_loader.load_documents()
+            try:
+                pdf_loader = PDFLoader(tmp_path)
+                pdf_documents = pdf_loader.load_documents()
+                print(f"PDF loaded successfully: {len(pdf_documents)} pages")
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Failed to load PDF: {str(e)}")
             
             # Split text into chunks
-            text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-            pdf_text_chunks = text_splitter.split_texts(pdf_documents)
+            try:
+                text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+                pdf_text_chunks = text_splitter.split_texts(pdf_documents)
+                print(f"Text split into {len(pdf_text_chunks)} chunks")
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Failed to split text: {str(e)}")
             
             # Create vector database (API key should be set in environment now)
-            embedding_model = EmbeddingModel()
-            pdf_vector_db = VectorDatabase(embedding_model)
+            try:
+                embedding_model = EmbeddingModel()
+                pdf_vector_db = VectorDatabase(embedding_model)
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Failed to initialize embedding model: {str(e)}")
             
             # Build vector database from chunks
             await pdf_vector_db.abuild_from_list(pdf_text_chunks)
