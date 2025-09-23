@@ -130,7 +130,13 @@ async def upload_pdf(file: UploadFile = File(...), api_key: str = Form("")):
                 raise HTTPException(status_code=500, detail=f"Failed to initialize embedding model: {str(e)}")
             
             # Build vector database from chunks
-            await pdf_vector_db.abuild_from_list(pdf_text_chunks)
+            try:
+                print("Starting embedding creation...")
+                await pdf_vector_db.abuild_from_list(pdf_text_chunks)
+                print("Embedding creation completed successfully!")
+            except Exception as e:
+                print(f"Error during embedding creation: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Failed to create embeddings: {str(e)}")
             
             current_pdf_filename = file.filename
             
