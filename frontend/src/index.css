@@ -245,6 +245,17 @@ button:focus-visible {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  color: var(--text-primary);
+}
+
+.upload-section h3 {
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.upload-section p {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
 }
 
 .upload-section::before {
@@ -285,6 +296,11 @@ button:focus-visible {
   font-size: 0.9em;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+}
+
+.pdf-status strong {
+  color: var(--text-primary);
 }
 
 .api-key-input {
@@ -352,6 +368,50 @@ button:focus-visible {
   100% {
     box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
   }
+}
+
+/* Error and status messages */
+.error {
+  color: var(--text-primary);
+  background: var(--danger-gradient);
+  padding: 1rem 1.5rem;
+  border-radius: 15px;
+  margin: 1rem 0;
+  font-weight: 500;
+  box-shadow: 0 4px 15px rgba(250, 112, 154, 0.3);
+}
+
+/* General text elements */
+p, span, div {
+  color: var(--text-primary);
+}
+
+/* Button text */
+button {
+  color: white;
+  font-weight: 600;
+}
+
+/* Input labels and descriptions */
+label {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Upload button text */
+.upload-section button {
+  color: white;
+  font-weight: 600;
+}
+
+/* Chat input placeholder */
+.chat-input input::placeholder {
+  color: var(--text-secondary);
+}
+
+/* API key input placeholder */
+.api-key-input input::placeholder {
+  color: var(--text-secondary);
 }
 
 /* Responsive design */
