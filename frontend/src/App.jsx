@@ -128,10 +128,13 @@ function App() {
 
   return (
     <div className="app">
-      <h1>
-        <FileText className="inline-icon" />
-        PDF Whisperer
-      </h1>
+      <div className="app-header">
+        <div className="logo-container">
+          <img src="/huegenius_logo.png" alt="HueGenius Logo" className="app-logo" />
+        </div>
+        <h1 className="app-title">HueGenius</h1>
+        <p className="app-subtitle">Learn all about color psychology and culture</p>
+      </div>
       
       <div className="api-key-input">
         <input
@@ -144,8 +147,8 @@ function App() {
 
       <div className={`upload-section ${pdfStatus.has_pdf ? 'has-pdf' : ''}`}>
         <Upload size={48} />
-        <h3>Upload a PDF Document</h3>
-        <p>Select a PDF file to start chatting with its content</p>
+        <h3>Upload Color Psychology Content</h3>
+        <p>Select a PDF about colors, psychology, or culture to start exploring</p>
         
         <input
           ref={fileInputRef}
@@ -156,7 +159,7 @@ function App() {
         />
         
         <button onClick={() => fileInputRef.current?.click()}>
-          Choose PDF File
+          Choose Color Psychology PDF
         </button>
 
         {pdfStatus.has_pdf && (
@@ -175,8 +178,8 @@ function App() {
           {messages.length === 0 ? (
             <div className="message">
               {pdfStatus.has_pdf 
-                ? "Ask me anything about your PDF document!"
-                : "Upload a PDF document to start chatting with its content."
+                ? "Ask me anything about color psychology and cultural meanings!"
+                : "Upload a color psychology PDF to start exploring the fascinating world of colors."
               }
             </div>
           ) : (
@@ -197,7 +200,7 @@ function App() {
         <div className="chat-input">
           <input
             type="text"
-            placeholder={pdfStatus.has_pdf ? "Ask a question about your PDF..." : "Upload a PDF first"}
+            placeholder={pdfStatus.has_pdf ? "Ask about colors, psychology, or culture..." : "Upload a color psychology PDF first"}
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
