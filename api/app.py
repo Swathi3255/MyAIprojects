@@ -1,5 +1,5 @@
 # Import required FastAPI components for building the API
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 # Import Pydantic for data validation and settings management
@@ -85,7 +85,7 @@ async def chat(request: ChatRequest):
 
 # Define PDF upload endpoint
 @app.post("/api/upload-pdf")
-async def upload_pdf(file: UploadFile = File(...), api_key: str = ""):
+async def upload_pdf(file: UploadFile = File(...), api_key: str = Form("")):
     global pdf_vector_db, pdf_text_chunks, current_pdf_filename
     
     try:
@@ -94,8 +94,9 @@ async def upload_pdf(file: UploadFile = File(...), api_key: str = ""):
             raise HTTPException(status_code=400, detail="Only PDF files are allowed")
         
         # Set API key for OpenAI BEFORE creating any aimakerspace objects
-        if api_key:
-            os.environ["OPENAI_API_KEY"] = api_key
+        if api_key and api_key.strip():
+            os.environ["OPENAI_API_KEY"] = api_key.strip()
+            print(f"API key set successfully: {api_key[:10]}...")  # Debug log
         else:
             raise HTTPException(status_code=400, detail="OpenAI API key is required")
         
