@@ -10,7 +10,7 @@ class EmbeddingModel:
     """Helper for generating embeddings via the OpenAI API."""
 
     def __init__(self, embeddings_model_name: str = "text-embedding-3-small"):
-        load_dotenv()
+        # Don't load dotenv here - API key should be set by the calling code
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
         if self.openai_api_key is None:
             raise ValueError(
@@ -19,8 +19,22 @@ class EmbeddingModel:
             )
 
         self.embeddings_model_name = embeddings_model_name
-        self.async_client = AsyncOpenAI(api_key=self.openai_api_key)
-        self.client = OpenAI(api_key=self.openai_api_key)
+        try:
+            # Initialize clients with explicit parameters to avoid proxies issue
+            import httpx
+            http_client = httpx.Client()
+            async_http_client = httpx.AsyncClient()
+            
+            self.client = OpenAI(
+                api_key=self.openai_api_key,
+                http_client=http_client
+            )
+            self.async_client = AsyncOpenAI(
+                api_key=self.openai_api_key,
+                http_client=async_http_client
+            )
+        except Exception as e:
+            raise ValueError(f"Failed to initialize OpenAI clients: {str(e)}")
 
     async def async_get_embeddings(self, list_of_text: Iterable[str]) -> List[List[float]]:
         """Return embeddings for ``list_of_text`` using the async client."""

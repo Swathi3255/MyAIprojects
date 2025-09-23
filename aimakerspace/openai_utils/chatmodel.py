@@ -1,10 +1,7 @@
 import os
 from typing import Any, AsyncIterator, Iterable, List, MutableMapping
 
-from dotenv import load_dotenv
 from openai import AsyncOpenAI, OpenAI
-
-load_dotenv()
 
 ChatMessage = MutableMapping[str, Any]
 
@@ -18,8 +15,22 @@ class ChatOpenAI:
         if self.openai_api_key is None:
             raise ValueError("OPENAI_API_KEY is not set")
 
-        self._client = OpenAI(api_key=self.openai_api_key)
-        self._async_client = AsyncOpenAI(api_key=self.openai_api_key)
+        try:
+            # Initialize clients with explicit parameters to avoid proxies issue
+            import httpx
+            http_client = httpx.Client()
+            async_http_client = httpx.AsyncClient()
+            
+            self._client = OpenAI(
+                api_key=self.openai_api_key,
+                http_client=http_client
+            )
+            self._async_client = AsyncOpenAI(
+                api_key=self.openai_api_key,
+                http_client=async_http_client
+            )
+        except Exception as e:
+            raise ValueError(f"Failed to initialize OpenAI clients: {str(e)}")
 
     def run(
         self,
