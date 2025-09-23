@@ -130,7 +130,7 @@ function App() {
     <div className="app">
       <h1>
         <FileText className="inline-icon" />
-        PDF Chat Assistant
+        PDF Whisperer
       </h1>
       
       <div className="api-key-input">
