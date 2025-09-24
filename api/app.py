@@ -67,7 +67,7 @@ async def chat(request: ChatRequest):
                     api_key=request.api_key,
                     model=request.model
                 ):
-                    yield chunk
+                    yield (chunk if isinstance(chunk, bytes) else str(chunk).encode("utf-8"))
             except Exception as e:
                 print(f"Error in RAG generation: {str(e)}")
                 yield f"Error: {str(e)}"
@@ -122,7 +122,7 @@ async def pdf_chat(request: PDFChatRequest):
                     api_key=request.api_key,
                     model=request.model
                 ):
-                    yield chunk
+                    yield (chunk if isinstance(chunk, bytes) else str(chunk).encode("utf-8"))
             except Exception as e:
                 print(f"Error in RAG generation: {str(e)}")
                 yield f"Error: {str(e)}"
