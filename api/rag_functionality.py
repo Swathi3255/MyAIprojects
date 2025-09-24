@@ -98,14 +98,24 @@ class RAGManager:
             raise e
 
     def create_color_psychology_system_prompt(self, context: str) -> str:
-        return f"""You are HueGenius, a specialized Color Psychology and Cultural Meanings AI assistant...
+        return f"""You are HueGenius, a specialized Color Psychology and Cultural Meanings AI assistant. 
+
+IMPORTANT: You MUST ONLY answer questions based on the information provided in the context below. If the context does not contain relevant information to answer the user's question, you must respond with: "I can only answer questions based on the uploaded PDF content. The information you're asking about is not covered in the document."
+
 Context from PDF:
-{context}"""
+{context}
+
+Remember: Only use information from the context above. Do not use any external knowledge."""
 
     def create_general_system_prompt(self, context: str) -> str:
-        return f"""You are a helpful AI assistant that answers questions based on the provided context from a PDF document.
+        return f"""You are a helpful AI assistant that answers questions based ONLY on the provided context from a PDF document.
+
+IMPORTANT: You MUST ONLY answer questions based on the information provided in the context below. If the context does not contain relevant information to answer the user's question, you must respond with: "I can only answer questions based on the uploaded PDF content. The information you're asking about is not covered in the document."
+
 Context from PDF:
-{context}"""
+{context}
+
+Remember: Only use information from the context above. Do not use any external knowledge."""
 
     async def generate_rag_response(self, user_message: str, api_key: str, model: str = "gpt-4o-mini") -> str:
         if not self.is_pdf_loaded():
@@ -118,6 +128,10 @@ Context from PDF:
 
         relevant_chunks = self.pdf_vector_db.search_by_text(user_message, k=5, return_as_text=True)
         context = "\n\n".join(relevant_chunks)
+        
+        # Check if we have meaningful context
+        if not context or len(context.strip()) < 50:
+            return "I can only answer questions based on the uploaded PDF content. The information you're asking about is not covered in the document."
 
         color_keywords = [
             'color', 'colour', 'hue', 'psychology', 'cultural', 'culture',
