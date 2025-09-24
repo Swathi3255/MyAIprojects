@@ -28,7 +28,7 @@ function App() {
 
   const checkPdfStatus = async () => {
     try {
-      const response = await axios.get('/api/pdf-status')
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/pdf-status`)
       setPdfStatus(response.data)
     } catch (error) {
       console.error('Error checking PDF status:', error)
@@ -53,7 +53,7 @@ function App() {
       formData.append('file', file)
       formData.append('api_key', apiKey)
 
-      const response = await axios.post('/api/upload-pdf', formData, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/upload-pdf`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -84,7 +84,7 @@ function App() {
   
     try {
       // Call the backend (non-streaming)
-      const response = await axios.post('/api/pdf-chat', {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/pdf-chat`, {
         user_message: userMessage,
         api_key: apiKey,
         model: 'gpt-4o-mini'
