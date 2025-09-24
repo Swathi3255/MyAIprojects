@@ -270,7 +270,7 @@ Instructions:
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": user_message}
             ]):
-                yield chunk
+                yield chunk.encode("utf-8")
             print("Streaming RAG response completed successfully")
             
         except Exception as e:
