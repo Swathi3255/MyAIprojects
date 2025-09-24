@@ -90,7 +90,7 @@ function App() {
         model: 'gpt-4o-mini'
       })
   
-      const assistantMessage = response.data  // backend sends full string
+      const assistantMessage = response.data.message    // backend sends full string
   
       // Add assistant message to chat
       setMessages(prev => [...prev, { type: 'assistant', content: assistantMessage }])

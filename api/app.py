@@ -11,7 +11,7 @@ import tempfile
 import shutil
 from typing import Optional
 from pathlib import Path
-
+from fastapi.responses import JSONResponse
 # Import RAG functionality
 from rag_functionality import (
     rag_manager, 
@@ -131,7 +131,7 @@ async def pdf_chat(request: PDFChatRequest, stream: bool = False):
             api_key=request.api_key,
             model=request.model
         )
-        return {"answer": response_text}
+        return JSONResponse(content={"message": response_text})
 
 
 # Define endpoint to get current PDF status
