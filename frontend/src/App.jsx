@@ -73,40 +73,27 @@ function App() {
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || !pdfStatus.has_pdf) return
-
+  
     const userMessage = inputMessage.trim()
     setInputMessage('')
     setIsLoading(true)
     setError('')
-
+  
     // Add user message to chat
     setMessages(prev => [...prev, { type: 'user', content: userMessage }])
-
+  
     try {
+      // Call the backend (non-streaming)
       const response = await axios.post('/api/pdf-chat', {
         user_message: userMessage,
         api_key: apiKey,
         model: 'gpt-4o-mini'
       })
-
-      // Just read response.data as text
-      const assistantMessage = response.data
-
+  
+      const assistantMessage = response.data  // backend sends full string
+  
+      // Add assistant message to chat
       setMessages(prev => [...prev, { type: 'assistant', content: assistantMessage }])
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        const chunk = decoder.decode(value)
-        assistantMessage += chunk
-
-        setMessages(prev => {
-          const newMessages = [...prev]
-          newMessages[newMessages.length - 1].content = assistantMessage
-          return newMessages
-        })
-      }
     } catch (error) {
       setError(error.response?.data?.detail || 'Error sending message')
       setMessages(prev => [...prev, { type: 'error', content: 'Failed to get response' }])
@@ -114,6 +101,7 @@ function App() {
       setIsLoading(false)
     }
   }
+  
 
   const handleKeyPress = (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
