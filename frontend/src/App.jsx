@@ -87,16 +87,12 @@ function App() {
         user_message: userMessage,
         api_key: apiKey,
         model: 'gpt-4o-mini'
-      }, {
-        responseType: 'stream'
       })
 
-      // Handle streaming response
-      const reader = response.data.getReader()
-      const decoder = new TextDecoder()
-      let assistantMessage = ''
+      // Just read response.data as text
+      const assistantMessage = response.data
 
-      setMessages(prev => [...prev, { type: 'assistant', content: '' }])
+      setMessages(prev => [...prev, { type: 'assistant', content: assistantMessage }])
 
       while (true) {
         const { done, value } = await reader.read()
