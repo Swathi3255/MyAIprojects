@@ -18,6 +18,7 @@ from rag_functionality import (
     load_pdf_for_rag, 
     get_pdf_status, 
     generate_streaming_rag_response,
+    generate_rag_response,
     is_pdf_loaded
 )
 
@@ -111,27 +112,27 @@ async def upload_pdf(file: UploadFile = File(...), api_key: str = Form("")):
 
 # Define PDF chat endpoint
 @app.post("/api/pdf-chat")
-async def pdf_chat(request: PDFChatRequest):
-    try:
-        # Create an async generator function for streaming RAG responses
-        async def generate():
-            try:
-                # Use RAG functionality to generate response
-                async for chunk in generate_streaming_rag_response(
-                    user_message=request.user_message,
-                    api_key=request.api_key,
-                    model=request.model
-                ):
-                    yield (chunk if isinstance(chunk, bytes) else str(chunk).encode("utf-8"))
-            except Exception as e:
-                print(f"Error in RAG generation: {str(e)}")
-                yield f"Error: {str(e)}"
+async def pdf_chat(request: PDFChatRequest, stream: bool = False):
+    if not is_pdf_loaded():
+        raise HTTPException(status_code=400, detail="No PDF uploaded. Please upload a PDF first.")
 
-        # Return a streaming response to the client
+    if stream:
+        async def generate():
+            async for chunk in generate_streaming_rag_response(
+                user_message=request.user_message,
+                api_key=request.api_key,
+                model=request.model
+            ):
+                yield chunk if isinstance(chunk, bytes) else chunk.encode("utf-8")
         return StreamingResponse(generate(), media_type="text/plain")
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    else:
+        response_text = await generate_rag_response(
+            user_message=request.user_message,
+            api_key=request.api_key,
+            model=request.model
+        )
+        return {"answer": response_text}
+
 
 # Define endpoint to get current PDF status
 @app.get("/api/pdf-status")
