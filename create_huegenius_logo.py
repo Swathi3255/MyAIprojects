@@ -176,3 +176,4 @@ if __name__ == "__main__":
         print(f"Error creating main logo: {e}")
         print("Creating simple logo instead...")
         create_simple_logo()
+

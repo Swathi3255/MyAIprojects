@@ -157,3 +157,4 @@ if __name__ == "__main__":
         print(f"\n📚 {niche.replace('_', ' ').title()}:")
         print(f"   Sample queries: {features['unique_queries'][:2]}")
         print(f"   Questionnaire items: {len(features['questionnaire'])}")
+

@@ -386,3 +386,4 @@ you choose will significantly impact how your message is received and understood
 
 if __name__ == "__main__":
     create_color_psychology_pdf()
+
